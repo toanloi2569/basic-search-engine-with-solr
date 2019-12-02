@@ -1,0 +1,13 @@
+
+{% extends "layout.html" %}
+{% block content %}
+    <!-- Search form -->
+  <div class="text-center" style="margin: 100px">
+    <img src="/img/search-logo.png" style="width: 10%"/>
+    <form class="form-inline" method='get' action='/result_search'>
+        <input class="col-md-7 offset-md-2 form-control mr-3 w-75" type="text" placeholder="Seach gì cũng được"
+        aria-label="Search" name="general_text">
+        <input type="submit" class="col-md-1 btn btn-info" value="Search">
+    </form>
+  </div>
+{% endblock %}
