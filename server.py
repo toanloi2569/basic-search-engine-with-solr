@@ -39,12 +39,12 @@ def basic_search(general_text):
         'hl.highlightMultiTerm':'true',
         'hl.fragsize':200,
         'defType' : 'dismax',
-        'fl' : 'id,tag, title, description, content, author, score',
+        'fl' : '*, score',
         'qf':'tag^7.0 title^7.0 description^4.0 content^1.0 author^1.0',
     })
     
-    results = get_results(results)
-    return results
+    results, stas = get_results(results)
+    return results, stas
 
 # Xử lý câu truy vấn nâng cao
 def advance_search(title, description, content, author, category):
@@ -64,17 +64,18 @@ def advance_search(title, description, content, author, category):
         'hl.highlightMultiTerm':'true',
         'hl.fragsize':70,
         'defType' : 'edismax',
-        'fl' : 'id,tag, title, description, content, author, score',
+        'fl' : '*, score',
         'qf':'category^4.0 title^3.0 description^2.0 author^2.0 content^1.0',
     })
     
-    results = get_results(results)
-    return results
+    results, stas = get_results(results)
+    return results, stas
 
 # Hàm này trả về kết quả có hightlight
 def get_results(results):
     hightlight = list(results.highlighting.values())
     result_list = list()
+    stas = {"numFound":results.raw_response['response']['numFound'],"time":results.qtime}
     for i,result in enumerate(results):
         for key in result.keys() :
             if key == '_version_' or key == '_default_text_':
@@ -92,7 +93,7 @@ def get_results(results):
         result["highlight"] = result["highlight"].replace('_', ' ') + "..."
 
         result_list.append(result)
-    return result_list
+    return result_list, stas
 
 @app.route('/', methods=['GET'])
 def get_main_page():
@@ -120,13 +121,13 @@ def search():
     category    = request.args.get('category')
 
     if general_text != None:
-        results = basic_search(general_text)
+        results, stas = basic_search(general_text)
     else:
-        results = advance_search(title, description, content, author, category)
+        results, stas = advance_search(title, description, content, author, category)
 
     # return jsonify(general_text, title, description, content, category)
     # return jsonify(results)
-    return render_template('result_search.html', results = results)
+    return render_template('result_search.html', results = results, stas=stas)
 
 @app.route('/add_csv_file', methods=['GET', 'POST'])
 def add_csv_file():
@@ -145,7 +146,7 @@ def add_csv_file():
         df = pd.read_csv(file_path, usecols = cols, encoding='utf8')
 
         json_rows = []
-        for index, row in df.iterrows():
+        for row in df.iterrows():
             json_row = {
                 "description" : row["description"],
                 "title"       : row["title"],

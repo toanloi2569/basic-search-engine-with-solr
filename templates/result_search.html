@@ -1,9 +1,13 @@
 {% extends "layout.html" %}
 {% block content %}
 
+<div style="margin: 5px 5px 50px 50px; margin-right: 400px ">
+<p>Tìm thấy {{stas['numFound']|safe}} bài viết liên quan trong thời gian {{stas['time']|safe}} miliseconds </p>
+</div>
 {% for result in results %}
     <div style="margin: 50px; margin-right: 400px">
         <a href="#" style="color: rgba(0, 0, 255, 0.808)" data-toggle="modal" data-target="#{{result['id']}}"><h4>{{result['title']}}</h4></a>
+        <p> {{result['score']|safe}} </p>
         <p> {{result['highlight']|safe}} </p>
     </div>
 {% endfor %}
