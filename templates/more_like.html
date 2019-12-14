@@ -1,29 +1,11 @@
 {% extends "layout.html" %}
 {% block content %}
 
-<div class = "content-dir-item" style="margin-bottom: 100px; margin-right: 400px">
-    {% if query['general_text'] != "" %}
-        <div class="form-group row" >   
-            <img src="/img/search-logo.png" style="width: 10%; " />  
-            <p style="text-align: center; padding: 20px" class="text-left"><b>Text : </b>{{query['general_text']}}</p>
-            
-        </div>
-    {% endif %}
-    <hr>
-</div>
-
-
 {% for result in results %}
     <div style="margin: 50px; margin-right: 400px">
         <a href="#" style="color: rgba(0, 0, 255, 0.808)" data-toggle="modal" 
             data-target="#{{result['id']}}"><h4>{{result['title']}}</h4></a>
-        <p> Score : {{result['score']}}&emsp;
-            |&emsp;
-            Category : {{result['category']}} 
-            |&emsp;
-            <a href="http://localhost:5000/more_like/{{result['id']}}">Xem bài báo tương tự</a>
-        </p>
-        <p> {{result['highlight']|safe}} </p>
+        <p> {{result['description']|safe}} </p>
         <hr/>
     </div>
 {% endfor %}
