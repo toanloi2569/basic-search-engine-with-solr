@@ -23,8 +23,12 @@
         <form action='/advance_search'>
             <input type="submit" class="btn btn-info" style="margin: 10px" value="Advance search">
         </form>
-        <input type="submit" class="btn btn-info" style="margin: 10px" value="Add document">
-        <input type="submit" class="btn btn-info" style="margin: 10px" value="Delete Document">
+        <form action='/add_csv_file'>
+            <input type="submit" class="btn btn-info" style="margin: 10px" value="Add document">
+        </form>
+        <form action='/delete_all' method='post'>
+            <input type="submit" class="btn btn-info" style="margin: 10px" value="Delete Document" disabled> 
+        </form>
     </div>
     <hr>
     <div id="content">
