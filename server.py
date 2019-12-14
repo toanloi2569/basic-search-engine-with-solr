@@ -27,8 +27,8 @@ def tokenizer(doc):
         return ''
 
 # Xử lý câu truy vấn cơ bản
-def basic_search(general_text):
-    text = tokenizer(general_text)
+def basic_search(text):
+    text = tokenizer(text)
     # search bằng pysolr
     results = solr.search(text, **{
         'rows':100,
@@ -39,7 +39,7 @@ def basic_search(general_text):
         'hl.highlightMultiTerm':'true',
         'hl.fragsize':200,
         'defType' : 'dismax',
-        'fl' : 'tag, title, description, content, author, score',
+        'fl' : 'id, tag, title, description, content, author, score',
         'qf':'tag^7.0 title^7.0 description^4.0 content^1.0 author^1.0',
     })
     
