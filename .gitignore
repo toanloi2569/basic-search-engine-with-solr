@@ -132,3 +132,4 @@ dmypy.json
 
 dantri.csv
 dantri_2.csv
+*.ipynb
