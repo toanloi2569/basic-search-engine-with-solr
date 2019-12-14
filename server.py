@@ -39,7 +39,7 @@ def basic_search(general_text):
         'hl.highlightMultiTerm':'true',
         'hl.fragsize':200,
         'defType' : 'dismax',
-        'fl' : 'tag, title, description, content, author, score',
+        'fl' : 'id,tag, title, description, content, author, score',
         'qf':'tag^7.0 title^7.0 description^4.0 content^1.0 author^1.0',
     })
     
@@ -64,7 +64,7 @@ def advance_search(title, description, content, author, category):
         'hl.highlightMultiTerm':'true',
         'hl.fragsize':70,
         'defType' : 'edismax',
-        'fl' : '*,score',
+        'fl' : 'id,tag, title, description, content, author, score',
         'qf':'category^4.0 title^3.0 description^2.0 author^2.0 content^1.0',
     })
     
@@ -83,7 +83,8 @@ def get_results(results):
 
             if type(result[key]) == list:
                 result[key] = ','.join(result[key])
-            result[key] = result[key].replace('_', ' ')
+            if type(result[key]) == str:
+                result[key] = result[key].replace('_', ' ')
             
         result["highlight"] = result["description"][:100] + "..."
         for key in hightlight[i].keys():
@@ -149,14 +150,12 @@ def add_csv_file():
                 "description" : row["description"],
                 "title"       : row["title"],
                 "content"     : row["content"],
-                "author"      : row["author"].split(','),
-                "tag"         : row["tag"].split(','),
+                "author"      : row["author"].split(',') if type(row["author"]) is str else '',
+                "tag"         : row["tag"].split(',') if type(row["tag"]) is str else '',
                 "link"        : row["link"],
                 "category"    : row["category"]
             }
             json_rows.append(json_row)
-            if (len(json_rows) % 50 == 0):
-                print (len(json_rows))
 
         solr.add(json_rows)
         return jsonify('updated'), 200
