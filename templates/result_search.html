@@ -5,6 +5,8 @@
     <div style="margin: 50px; margin-right: 400px">
         <a href="#" style="color: rgba(0, 0, 255, 0.808)" data-toggle="modal" data-target="#{{result['id']}}"><h4>{{result['title']}}</h4></a>
         <p> {{result['highlight']|safe}} </p>
+        <hr>
+        <p> Score : {{result['score']}}</p>
     </div>
 {% endfor %}
 
