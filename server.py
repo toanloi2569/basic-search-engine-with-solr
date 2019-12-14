@@ -45,8 +45,8 @@ def basic_search(text):
         'qf':'tag^3.0 title^3.0 description^2.0 content^1.0 author^1.0',
     })
     
-    results = get_results(results)
-    return results
+    results, stas = get_results(results)
+    return results, stas
 
 
 
@@ -72,8 +72,8 @@ def advance_search(title, description, content, author, category):
         'qf':'category^4.0 title^3.0 description^2.0 author^2.0 content^1.0',
     })
     
-    results = get_results(results)
-    return results
+    results, stas = get_results(results)
+    return results, stas
 
 
 
@@ -81,6 +81,7 @@ def advance_search(title, description, content, author, category):
 def get_results(results):
     highlight = list(results.highlighting.values())
     result_list = list()
+    stas = {"numFound":results.raw_response['response']['numFound'],"time":results.qtime}
     for i,result in enumerate(results):
         for key in result.keys() :
             if key == '_version_' or key == '_default_text_':
@@ -99,7 +100,7 @@ def get_results(results):
             result["highlight"] = result["highlight"].replace('_', ' ') + "..."
 
         result_list.append(result)
-    return result_list
+    return result_list, stas
 
 
 
@@ -134,18 +135,18 @@ def search():
 
     query       = request.args
     if general_text != None:
-        results = basic_search(general_text)
+        results, stas = basic_search(general_text)
     else:
-        results = advance_search(title, description, content, author, category)
-    return render_template('result_search.html', results = results, query = query)
+        results, stas = advance_search(title, description, content, author, category)
+    return render_template('result_search.html', results=results, query=query, stas=stas)
 
 
 
-@app.route('/more_like/<id>', methods=['GET'])
-def more_like(id):
-    results = solr.more_like_this(q=f'id:{id}', mltfl='content', mltmintf=3)
-    results = get_results(results)
-    return render_template('more_like.html', results = results)
+@app.route('/more_like/<id>/<title>', methods=['GET'])
+def more_like(id, title):
+    results = solr.more_like_this(q=f'id:{id}', mltfl='content')
+    results, stas = get_results(results)
+    return render_template('more_like.html', results=results, id=id, stas=stas, title=title)
 
 
 

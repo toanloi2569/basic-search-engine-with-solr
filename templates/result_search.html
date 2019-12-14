@@ -2,14 +2,37 @@
 {% block content %}
 
 <div class = "content-dir-item" style="margin-bottom: 100px; margin-right: 400px">
-    {% if query['general_text'] != "" %}
-        <div class="form-group row" >   
+    {% if query['general_text'] %}
+        <div class="row" >   
             <img src="/img/search-logo.png" style="width: 10%; " />  
             <p style="text-align: center; padding: 20px" class="text-left"><b>Text : </b>{{query['general_text']}}</p>
-            
+        </div>
+    {% else %}
+        <div class="row">
+            <img src="/img/search-logo.png" style="width: 20%;"/> 
+            <div style="margin-left: 20px">
+                <div class="row" >   
+                    <p style="text-align: center" class="text-left"><b>Title : </b>{{query['title']}}</p>
+                </div>
+                <div class="row" >   
+                    <p style="text-align: center" class="text-left"><b>Description : </b>{{query['description']}}</p>
+                </div>
+                <div class="row" >   
+                    <p style="text-align: center" class="text-left"><b>Content : </b>{{query['content']}}</p>
+                </div>
+                <div class="row" >   
+                    <p style="text-align: center" class="text-left"><b>Author : </b>{{query['author']}}</p>
+                </div>
+                <div class="row" >   
+                    <p style="text-align: center" class="text-left"><b>Category : </b>{{query['category']}}</p>
+                </div>
+            </div>
         </div>
     {% endif %}
     <hr>
+    <div style="margin: 5px 5px;">
+        <p>Tìm thấy {{stas['numFound']|safe}} bài viết liên quan trong thời gian {{stas['time']|safe}} miliseconds </p>
+    </div>
 </div>
 
 
@@ -21,7 +44,7 @@
             |&emsp;
             Category : {{result['category']}} 
             |&emsp;
-            <a href="http://localhost:5000/more_like/{{result['id']}}">Xem bài báo tương tự</a>
+            <a href="http://localhost:5000/more_like/{{result['id']}}/{{result['title']}}">Xem bài báo tương tự</a>
         </p>
         <p> {{result['highlight']|safe}} </p>
         <hr/>
@@ -31,7 +54,7 @@
 {% for result in results %}
    <!-- Modal -->
     <div id="{{result['id']}}" class="modal fade" role="dialog">
-        <div class="modal-dialog" style="max-width: 200vh"> 
+        <div class="modal-dialog" style="max-width: 180vh"> 
       
           <!-- Modal content-->
             <div class="modal-content">
@@ -83,6 +106,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <a href="http://localhost:5000/more_like/{{result['id']}}/{{result['title']}}">Xem bài báo tương tự</a>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 </div>
             </div>
