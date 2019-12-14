@@ -9,6 +9,7 @@ import os
 import spacy
 
 nlp = spacy.load('vi_spacy_model')
+# Gán url search cho pysolr
 solr = pysolr.Solr('http://localhost:8983/solr/dantri', always_commit=True)
 
 static_folder = os.path.dirname(os.path.realpath(__file__))+'/static/'
@@ -19,12 +20,48 @@ app.config['JSON_AS_ASCII'] = False
 def tokenizer(doc):
     return nlp(doc).text
 
+# Xử lý câu truy vấn cơ bản
 def basic_search(general_text):
     text = tokenizer(general_text)
-    results = solr.search(text)
-    results = [clean(result) for result in results]
+    # search bằng pysolr
+    results = solr.search(text, **{
+        'rows':100,
+        'hl':'true',
+        'hl.method':'original',
+        'hl.simple.pre':'<mark style="background-color:#ffff0070;">',
+        'hl.simple.post':'</mark>',
+        'hl.highlightMultiTerm':'true',
+        'hl.fragsize':70,
+        'defType' : 'dismax',
+        'qf':'tag^4.0 title^3.0 description^2.0 content^1.0 author^1.0',
+    })
+    
+    results = get_results(results)
     return results
 
+# Hàm này trả về kết quả có hightlight
+def get_results(results):
+    hightlight = list(results.highlighting.values())
+    result_list = list()
+    for i,result in enumerate(results):
+        for key in result.keys() :
+            if key == '_version_' or key == '_default_text_':
+                result[key] = ""
+                continue
+
+            if type(result[key]) == list:
+                result[key] = ','.join(result[key])
+            result[key] = result[key].replace('_', ' ')
+            
+        result["highlight"] = result["description"][:100] + "..."
+        for key in hightlight[i].keys():
+            result["highlight"] += "...".join(hightlight[i][key])
+        result["highlight"] = result["highlight"].replace('_', ' ') + "..."
+
+        result_list.append(result)
+    return result_list
+
+# Hàm này trả về kết quả ko có hightlight
 def clean(result):
     for key in result.keys() :
         if key == '_version_':
@@ -35,20 +72,43 @@ def clean(result):
         result[key] = result[key].replace('_', ' ')
     return result
 
+# Xử lý câu truy vấn nâng cao
 def advance_search(title, description, content, author, category):
-    return
+    title = "title:" + tokenizer(title) if title != "" else ""
+    description = "description:" +  tokenizer(description) if description != "" else ""
+    content = "content:" + tokenizer(content) if content != ""  else ""
+    author = "author:" +  tokenizer(author) if author != ""  else ""
+    category = "category:" + category.lower().replace(" ","-") if category != ""  else ""
 
+    q = category + " " + title + description + content + author
+    print(category)
+    print(q)
+    results = solr.search(q, **{
+        'rows':10,
+        'hl':'true',
+        'hl.method':'original',
+        'hl.simple.pre':'<mark style="background-color:#ffff0070;">',
+        'hl.simple.post':'</mark>',
+        'hl.highlightMultiTerm':'true',
+        'hl.fragsize':70,
+        'defType' : 'edismax',
+        'qf':'category^4.0 title^3.0 description^2.0 author^2.0 content^1.0',
+    })
+    
+    results = get_results(results)
+    return results
 
+# gen ra trang search nâng cao
 @app.route('/basic_search', methods=['GET'])
 def get_basic_search_page():
     return render_template('basic_search.html')
 
-
+# gen ra trang search cơ bản
 @app.route('/advance_search', methods=['GET'])
 def get_advance_search_page():
     return render_template('advance_search.html')
 
-
+# Xử lý điều hướng câu truy vấn từ client gửi đến
 @app.route('/result_search', methods=['GET'])
 def search():
     general_text = request.args.get('general_text')
