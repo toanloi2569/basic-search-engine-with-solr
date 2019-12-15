@@ -126,7 +126,8 @@
 	       (empty by default), and down cases.  At query time only, it
 	       also applies synonyms.
 	  -->
-    <fieldType name="text_general" class="solr.TextField" multiValued="false" indexed="true" stored="true" termVectors="true" termPositions="true">
+    <fieldType name="text_general" class="solr.TextField" multiValued="false" 
+      indexed="true" stored="true" termVectors="true" termPositions="true">
       <analyzer type="index">
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/vi_stopwords.txt" />
@@ -166,14 +167,18 @@
       </analyzer>
     </fieldType>
     
-
+    <!-- ***************************************************************************************** -->
     <field name="description" type="text_general" />
     <field name="title" type="text_general"/>
     <field name="content" type="text_general" />
-    <field name="author" type="multi_text_general" indexed="true" stored="true" termVectors="true" termPositions="true"/>
+
+    <field name="author" type="multi_text_general" indexed="true" stored="true" 
+      termVectors="true" termPositions="true"/>
     <field name="tag" type="multi_text_general" indexed="true" stored="true"/>
+
     <field name="link" type="string"/>
     <field name="category" type="category_text_gerenal"/>
+
 
     <field name="_default_text_" type="copy_text_general" indexed="true" stored="true"/>
 
@@ -181,6 +186,8 @@
     <copyField source="title" dest="_default_text_"/>
     <copyField source="content" dest="_default_text_"/>
     <copyField source="tag" dest="_default_text_"/>
+
+     <!-- ***************************************************************************************** -->
 
     <!-- Dynamic field definitions allow using convention over configuration
        for fields via the specification of patterns to match field names.

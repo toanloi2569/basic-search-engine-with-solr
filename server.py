@@ -26,9 +26,11 @@ def tokenizer(doc):
     else:
         return ''
 
+
+
 # Xử lý câu truy vấn cơ bản
-def basic_search(general_text):
-    text = tokenizer(general_text)
+def basic_search(text):
+    text = tokenizer(text)
     # search bằng pysolr
     results = solr.search(text, **{
         'rows':100,
@@ -48,6 +50,8 @@ def basic_search(general_text):
     
     results, stas = get_results(results)
     return results, stas
+
+
 
 # Xử lý câu truy vấn nâng cao
 def advance_search(title, description, content, author, category):
@@ -78,43 +82,52 @@ def advance_search(title, description, content, author, category):
     results, stas = get_results(results)
     return results, stas
 
-# Hàm này trả về kết quả có hightlight
+
+
+# Hàm này trả về kết quả có highlight
 def get_results(results):
-    hightlight = list(results.highlighting.values())
+    highlight = list(results.highlighting.values())
     result_list = list()
     stas = {"numFound":results.raw_response['response']['numFound'],"time":results.qtime}
     for i,result in enumerate(results):
         for key in result.keys() :
             if key == '_version_' or key == '_default_text_':
-                result[key] = ""
+                result[key] = ''
                 continue
 
             if type(result[key]) == list:
                 result[key] = ','.join(result[key])
             if type(result[key]) == str:
                 result[key] = result[key].replace('_', ' ')
-            
-        result["highlight"] = result["description"][:100] + "..."
-        for key in hightlight[i].keys():
-            result["highlight"] += "...".join(hightlight[i][key])
-        result["highlight"] = result["highlight"].replace('_', ' ') + "..."
+
+        if len(highlight) != 0:
+            result["highlight"] = result["description"][:100] + "..."
+            for key in highlight[i].keys():
+                result["highlight"] += "...".join(highlight[i][key])
+            result["highlight"] = result["highlight"].replace('_', ' ') + "..."
 
         result_list.append(result)
     return result_list, stas
+
+
 
 @app.route('/', methods=['GET'])
 def get_main_page():
     return render_template('basic_search.html')
 
-# gen ra trang search nâng cao
+
+
 @app.route('/basic_search', methods=['GET'])
 def get_basic_search_page():
     return render_template('basic_search.html')
 
-# gen ra trang search cơ bản
+
+
 @app.route('/advance_search', methods=['GET'])
 def get_advance_search_page():
     return render_template('advance_search.html')
+
+
 
 # Xử lý điều hướng câu truy vấn từ client gửi đến
 @app.route('/result_search', methods=['GET'])
@@ -127,51 +140,63 @@ def search():
     author      = request.args.get('author')
     category    = request.args.get('category')
 
+    query       = request.args
     if general_text != None:
         results, stas = basic_search(general_text)
     else:
         results, stas = advance_search(title, description, content, author, category)
+    return render_template('result_search.html', results=results, query=query, stas=stas)
 
-    # return jsonify(general_text, title, description, content, category)
-    # return jsonify(results)
-    return render_template('result_search.html', results = results, stas=stas)
+
+
+@app.route('/more_like/<id>/<title>', methods=['GET'])
+def more_like(id, title):
+    results = solr.more_like_this(q=f'id:{id}', mltfl='content')
+    results, stas = get_results(results)
+    return render_template('more_like.html', results=results, id=id, stas=stas, title=title)
+
+
 
 @app.route('/add_csv_file', methods=['GET', 'POST'])
 def add_csv_file():
     if request.method == 'GET':
         return render_template('add_file.html')
-    else:
-        file = request.files['file']
-        if file :
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
-        else :
-            return jsonify('cant read file')
+    
+    file = request.files['file']
+    if file :
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
+    else :
+        return jsonify('cant read file')
 
-        cols = ['description', 'title', 'content', 'author', 'tag', 'link', 'category']
-        df = pd.read_csv(file_path, usecols = cols, encoding='utf8')
+    cols = ['description', 'title', 'content', 'author', 'tag', 'link', 'category']
+    df = pd.read_csv(file_path, usecols = cols, encoding='utf8')
 
-        json_rows = []
-        for row in df.iterrows():
-            json_row = {
-                "description" : row["description"],
-                "title"       : row["title"],
-                "content"     : row["content"],
-                "author"      : row["author"].split(',') if type(row["author"]) is str else '',
-                "tag"         : row["tag"].split(',') if type(row["tag"]) is str else '',
-                "link"        : row["link"],
-                "category"    : row["category"]
-            }
-            json_rows.append(json_row)
+    json_rows = []
+    for row in df.iterrows():
+        json_row = {
+            "description" : row["description"],
+            "title"       : row["title"],
+            "content"     : row["content"],
+            "author"      : row["author"].split(',') if type(row["author"]) is str else '',
+            "tag"         : row["tag"].split(',') if type(row["tag"]) is str else '',
+            "link"        : row["link"],
+            "category"    : row["category"]
+        }
+        json_rows.append(json_row)
 
-        solr.add(json_rows)
-        return jsonify('updated'), 200
+    solr.add(json_rows)
+    return jsonify('updated'), 200
+
+
 
 @app.route('/delete_all', methods=['POST'])
 def delete_all():
     solr.delete(q='*:*')
     return jsonify('ok'), 200
+
+
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
