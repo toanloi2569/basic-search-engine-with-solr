@@ -33,7 +33,7 @@ def basic_search(text):
     text = tokenizer(text)
     # search bằng pysolr
     results = solr.search(text, **{
-        'rows':100,
+        'rows':10,
         'hl':'true',
         'hl.method':'original',
         'hl.simple.pre':'<mark style="background-color:#ffff0070;">',
@@ -43,6 +43,8 @@ def basic_search(text):
         'defType' : 'dismax',
         'fl' : '*, score',
         'qf':'tag^3.0 title^3.0 description^2.0 content^1.0 author^1.0',
+        # 'bq':'{!func}linear(clicked, 0.01 ,0.0 )',
+        # 'bq':'{!func}log(linear(clicked, 20 ,0.0 ))',
     })
     
     results, stas = get_results(results)
@@ -140,6 +142,13 @@ def search():
         results, stas = advance_search(title, description, content, author, category)
     return render_template('result_search.html', results=results, query=query, stas=stas)
 
+
+
+@app.route('/result_search/clicked/<id>', methods=['POST'])
+def clicked(id):
+    doc = { 'id' : id, 'clicked' : 1}
+    solr.add([doc], fieldUpdates={'clicked':'inc'})
+    return 'OK'
 
 
 @app.route('/more_like/<id>/<title>', methods=['GET'])

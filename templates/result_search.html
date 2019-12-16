@@ -36,10 +36,17 @@
 </div>
 
 
+<iframe name="votar" style="display:none;"></iframe>
 {% for result in results %}
     <div style="margin: 50px; margin-right: 400px">
-        <a href="#" style="color: rgba(0, 0, 255, 0.808)" data-toggle="modal" 
-            data-target="#{{result['id']}}"><h4>{{result['title']}}</h4></a>
+        
+        <form method="post" action="/result_search/clicked/{{result['id']}}" class="inline" target="votar">
+            <input type="hidden" name="extra_submit_param" value="extra_submit_value">
+            <button type="submit" name="{{result['id']}}" data-toggle="modal"
+                data-target="#{{result['id']}}"  value="submit_value" class="link-button">
+                <h4 style="text-align: left">{{result['title']}}</h4>
+            </button>
+        </form>
         <p> Score : {{result['score']}}&emsp;
             |&emsp;
             Category : {{result['category']}} 
@@ -116,6 +123,24 @@
 {% endfor %}
 
 
+
+<style>
+    .link-button {
+        padding: 0px;
+        background: none;
+        border: none;
+        color: blue;
+        cursor: pointer;
+        font-size: 1em;
+        font-family: serif;
+    }
+    .link-button:focus {
+        outline: none;
+    }
+    .link-button:active {
+        color:red;
+    }
+</style>
 
 {% endblock %}
 
