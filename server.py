@@ -39,12 +39,15 @@ def basic_search(text):
         'hl.simple.pre':'<mark style="background-color:#ffff0070;">',
         'hl.simple.post':'</mark>',
         'hl.highlightMultiTerm':'true',
-        'hl.fragsize':200,
+        'hl.fragsize':100,
         'defType' : 'dismax',
         'fl' : '*, score',
-        'qf':'tag^3.0 title^3.0 description^2.0 content^1.0 author^1.0',
-        # 'bq':'{!func}linear(clicked, 0.01 ,0.0 )',
+        'bq':'{!func}linear(clicked, 0.01 ,0.0 )',
         # 'bq':'{!func}log(linear(clicked, 20 ,0.0 ))',
+        'mm':1,
+        'ps':3,
+        'pf': 'title^3.0 description^3.0 content^3.0',
+        'qf':'tag^5 title^3.0 description^2.0 content^1.0',
     })
     
     results, stas = get_results(results)
@@ -60,7 +63,8 @@ def advance_search(title, description, content, author, category):
     author      = "author:" +  tokenizer(author) if author != ""  else ""
     category    = "category:" + category.lower().replace(" ","-") if category != ""  else ""
 
-    q = category + " " + title + description + content + author
+    q = category + " && " + title + "&&" + description + "&&" + content + "&&" + author
+    print(q)
     results = solr.search(q, **{
         'rows':10,
         'hl':'true',
@@ -68,10 +72,13 @@ def advance_search(title, description, content, author, category):
         'hl.simple.pre':'<mark style="background-color:#ffff0070;">',
         'hl.simple.post':'</mark>',
         'hl.highlightMultiTerm':'true',
-        'hl.fragsize':70,
+        'hl.fragsize':100,
         'defType' : 'edismax',
         'fl' : '*, score',
-        'qf':'category^4.0 title^3.0 description^2.0 author^2.0 content^1.0',
+        'mm':'1',
+        'ps':3,
+        'pf': 'title^3.0 description^3.0 content^3.0',
+        'qf':'tag^5 title^3.0 description^2.0 content^1.0',
     })
     
     results, stas = get_results(results)
@@ -176,7 +183,7 @@ def add_csv_file():
     df = pd.read_csv(file_path, usecols = cols, encoding='utf8')
 
     json_rows = []
-    for index, row in df.iterrows():
+    for row in df.iterrows():
         json_row = {
             "description" : row["description"],
             "title"       : row["title"],
