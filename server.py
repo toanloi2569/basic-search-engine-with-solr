@@ -9,9 +9,11 @@ import os
 
 import spacy
 
+
+
 nlp = spacy.load('vi_spacy_model')
 # Gán url search cho pysolr
-solr = pysolr.Solr('http://localhost:8983/solr/dantri', always_commit=True)
+solr = pysolr.Solr('http://localhost:8983/solr/dantri', always_commit=True, timeout=3600)
 UPLOAD_FOLDER = '/uploads'
 
 static_folder = os.path.dirname(os.path.realpath(__file__))+'/static/'
@@ -46,8 +48,8 @@ def basic_search(text):
         # 'bq':'{!func}log(linear(clicked, 20 ,0.0 ))',
         'mm':1,
         'ps':3,
-        'pf': 'title^3.0 description^3.0 content^3.0',
-        'qf':'tag^5 title^3.0 description^2.0 content^1.0',
+        'pf': 'title^3.0 description^3.0 content^2.0',
+        'qf':'tag^3 title^3.0 description^2.0 content^1.0',
     })
     
     results, stas = get_results(results)
@@ -75,10 +77,10 @@ def advance_search(title, description, content, author, category):
         'hl.fragsize':100,
         'defType' : 'edismax',
         'fl' : '*, score',
-        'mm':'1',
-        'ps':3,
-        'pf': 'title^3.0 description^3.0 content^3.0',
-        'qf':'tag^5 title^3.0 description^2.0 content^1.0',
+        # 'mm':'1',
+        # 'ps':3,
+        # 'pf': 'title^3.0 description^3.0 content^3.0',
+        # 'qf':'tag^5 title^3.0 description^2.0 content^1.0',
     })
     
     results, stas = get_results(results)
@@ -135,6 +137,8 @@ def get_advance_search_page():
 @app.route('/result_search', methods=['GET'])
 def search():
     general_text = request.args.get('general_text')
+    if general_text is '':
+        return ('Nhập text mới search được chứ ???')
 
     title       = request.args.get('title')
     description = request.args.get('description')
@@ -183,7 +187,7 @@ def add_csv_file():
     df = pd.read_csv(file_path, usecols = cols, encoding='utf8')
 
     json_rows = []
-    for row in df.iterrows():
+    for index, row in df.iterrows():
         json_row = {
             "description" : row["description"],
             "title"       : row["title"],

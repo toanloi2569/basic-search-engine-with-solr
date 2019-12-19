@@ -126,8 +126,9 @@
 	       (empty by default), and down cases.  At query time only, it
 	       also applies synonyms.
 	  -->
-    <fieldType name="text_general" class="solr.TextField" multiValued="false" 
-      indexed="true" stored="true" termVectors="true" termPositions="true">
+
+     <fieldType name="text_general" class="solr.TextField" multiValued="false" 
+      omitNorms="true" indexed="true" stored="true" termVectors="true" termPositions="true">
       <analyzer type="index">
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/vi_stopwords.txt" />
@@ -135,9 +136,66 @@
       </analyzer>
       <analyzer type="query">
         <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.SuggestStopFilterFactory" ignoreCase="true" words="lang/vi_stopwords.txt" />
+        <filter class="solr.LowerCaseFilterFactory"/>
+      </analyzer>
+      <similarity class="solr.BM25SimilarityFactory">
+        <float name="k1">1.2</float>
+        <float name="b">0.75</float>
+      </similarity>
+    </fieldType>
+    <fieldType name="text_general_title" class="solr.TextField" multiValued="false" 
+      omitNorms="true" indexed="true" stored="true" termVectors="true" termPositions="true">
+      <analyzer type="index">
+        <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/vi_stopwords.txt" />
         <filter class="solr.LowerCaseFilterFactory"/>
       </analyzer>
+      <analyzer type="query">
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.SuggestStopFilterFactory" ignoreCase="true" words="lang/vi_stopwords.txt" />
+        <filter class="solr.LowerCaseFilterFactory"/>
+      </analyzer>
+      <similarity class="solr.BM25SimilarityFactory">
+        <float name="k1">1.2</float>
+        <float name="b">0.0</float>
+      </similarity>
+    </fieldType>
+
+    <fieldType name="text_general_description" class="solr.TextField" multiValued="false" 
+      omitNorms="true" indexed="true" stored="true" termVectors="true" termPositions="true">
+      <analyzer type="index">
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/vi_stopwords.txt" />
+        <filter class="solr.LowerCaseFilterFactory"/>
+      </analyzer>
+      <analyzer type="query">
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.SuggestStopFilterFactory" ignoreCase="true" words="lang/vi_stopwords.txt" />
+        <filter class="solr.LowerCaseFilterFactory"/>
+      </analyzer>
+      <similarity class="solr.BM25SimilarityFactory">
+        <float name="k1">1.2</float>
+        <float name="b">0.0</float>
+      </similarity>
+    </fieldType>
+
+    <fieldType name="text_general_content" class="solr.TextField" multiValued="false" 
+      omitNorms="true" indexed="true" stored="true" termVectors="true" termPositions="true">
+      <analyzer type="index">
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/vi_stopwords.txt" />
+        <filter class="solr.LowerCaseFilterFactory"/>
+      </analyzer>
+      <analyzer type="query">
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.SuggestStopFilterFactory" ignoreCase="true" words="lang/vi_stopwords.txt" />
+        <filter class="solr.LowerCaseFilterFactory"/>
+      </analyzer>
+      <similarity class="solr.BM25SimilarityFactory">
+        <float name="k1">2</float>
+        <float name="b">1</float>
+      </similarity>
     </fieldType>
 
     <fieldType name="multi_text_general" class="solr.TextField" multiValued="true" positionIncrementGap="100">
@@ -167,27 +225,23 @@
       </analyzer>
     </fieldType>
     
-    <!-- ***************************************************************************************** -->
-    <field name="description" type="text_general" />
-    <field name="title" type="text_general"/>
-    <field name="content" type="text_general" />
-
+	
+    <field name="description" type="text_general_description" />
+    <field name="title" type="text_general_title"/>
+    <field name="content" type="text_general_content" />
     <field name="author" type="multi_text_general" indexed="true" stored="true" 
       termVectors="true" termPositions="true"/>
     <field name="tag" type="multi_text_general" indexed="true" stored="true"/>
-
     <field name="link" type="string"/>
     <field name="category" type="category_text_gerenal"/>
-
-
+    <field name="clicked" type="pint" default="0" indexed="false" stored="false"/>
+<!-- 
     <field name="_default_text_" type="copy_text_general" indexed="true" stored="true"/>
 
     <copyField source="description" dest="_default_text_"/>
     <copyField source="title" dest="_default_text_"/>
     <copyField source="content" dest="_default_text_"/>
-    <copyField source="tag" dest="_default_text_"/>
-
-     <!-- ***************************************************************************************** -->
+    <copyField source="tag" dest="_default_text_"/> -->
 
     <!-- Dynamic field definitions allow using convention over configuration
        for fields via the specification of patterns to match field names.

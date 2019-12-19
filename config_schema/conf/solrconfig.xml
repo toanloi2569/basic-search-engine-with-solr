@@ -709,7 +709,7 @@
     <lst name="defaults">
       <str name="echoParams">explicit</str>
       <int name="rows">10</int>
-        <str name="df">_default_text_</str> 
+        <str name="df">_text_</str> 
        
       <!-- Change from JSON to XML format (the default prior to Solr 7.0)
          <str name="wt">xml</str> 
@@ -775,7 +775,7 @@
       <str name="echoParams">explicit</str>
       <str name="wt">json</str>
       <str name="indent">true</str>
-      <str name="df">_default_text_</str>
+      <str name="df">_text_</str>
     </lst>
   </requestHandler>
 
@@ -795,9 +795,23 @@
     </lst>
   </requestHandler>
 
+  <requestHandler name="/mlt" class="solr.MoreLikeThisHandler">
+    <lst name="defaults">
+      <str name="mlt.qf">
+        title^5 description^3
+      </str>`
+      <str name="mlt.fl">title description content</str>
+      <str name="mlt.mintf">3</str>
+      <str name="mlt.maxdf">1000</str>
+      <str name="mlt.minwl">5</str>
+      <str name="mlt.maxqt">25</str>
+      <str name="mlt.count">20</str>
+    </lst>
+</requestHandler>
+
   <initParams path="/update/**,/query,/select,/tvrh,/elevate,/spell,/browse">
     <lst name="defaults">
-      <str name="df">_default_text_</str>
+      <str name="df">_text_</str>
     </lst>
   </initParams>
 
