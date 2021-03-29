@@ -40,7 +40,7 @@ pprint==0.1
 preshed==3.0.2
 prompt-toolkit==3.0.1
 ptyprocess==0.6.0
-Pygments==2.5.1
+Pygments==2.7.4
 pyrsistent==0.15.6
 pysolr==3.8.1
 python-crfsuite==0.9.6
